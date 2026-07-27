@@ -513,7 +513,8 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 10px 14px;
-    color: white;
+    color: var(--text-primary);
+    color-scheme: dark;
     font-size: 0.9rem;
     transition: all var(--transition-speed) ease;
     outline: none;
@@ -524,6 +525,25 @@ body {
     border-color: var(--border-color-focus);
     background-color: rgba(255, 255, 255, 0.05);
     box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+}
+
+/* Explicit option colors keep native Chromium select popups readable. */
+.form-group select option,
+.status-select option {
+    background-color: #171b2e;
+    color: #f8fafc;
+}
+
+.form-group select option:checked,
+.status-select option:checked {
+    background-color: #3730a3;
+    color: #ffffff;
+}
+
+.form-group select option:hover,
+.status-select option:hover {
+    background-color: #312e81;
+    color: #ffffff;
 }
 
 .form-group input::placeholder {
@@ -589,6 +609,42 @@ body {
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--color-danger);
     border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.attendance-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.debug-mode-badge {
+    padding: 3px 7px;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--color-warning);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.status-select {
+    min-width: 112px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #171b2e;
+    color: var(--text-primary);
+    color-scheme: dark;
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: var(--border-color-focus);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 /* Action Group */

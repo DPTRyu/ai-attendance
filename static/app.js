@@ -286,7 +286,7 @@ function setupActions() {
             
             showToast(data.message, 'success');
             bulkBar.classList.add('hide');
-            loadAttendance();
+            refreshStatusViews();
         } catch (error) {
             showToast(error.message, 'error');
         }
@@ -332,13 +332,16 @@ async function loadDashboard() {
                 
                 // Format timestamp nicely
                 const time = new Date(log.created_at).toLocaleString();
+                const resultClass = log.result === 'Success' || log.operation === 'Status Changed'
+                    ? 'result-success'
+                    : 'result-failure';
                 
                 item.innerHTML = `
                     <div class="audit-log-meta">
                         <span><span class="audit-log-operator">${log.operator}</span> performed <span class="audit-log-op">${log.operation}</span></span>
                         <span>${time}</span>
                     </div>
-                    <div class="audit-log-target">Target: ${log.target} <span class="result-badge ${log.result === 'Success' ? 'result-success' : 'result-failure'}">${log.result}</span></div>
+                    <div class="audit-log-target">Target: ${log.target} <span class="result-badge ${resultClass}">${log.result}</span></div>
                     ${log.details ? `<div class="audit-log-desc">${log.details}</div>` : ''}
                 `;
                 logsContainer.appendChild(item);
@@ -533,7 +536,11 @@ async function loadAttendance() {
                 <td>${rec.work_date}</td>
                 <td>${formatTime(rec.start_time)}</td>
                 <td>${formatTime(rec.end_time)}</td>
-                <td><span class="badge ${badgeClass}">${rec.status}</span></td>
+                <td>
+                    <select class="status-select" aria-label="Change status for ${rec.employee_name || rec.employee_id}" data-testid="status-select-${rec.id}">
+                        ${['Pending', 'Approved', 'Rejected'].map(status => `<option value="${status}"${status === rec.status ? ' selected' : ''}>${status}</option>`).join('')}
+                    </select>
+                </td>
                 <td>
                     ${rec.approver ? `<strong>${rec.approver}</strong>` : '-'}
                     ${rec.approved_at ? `<br><span style="font-size:0.7rem;color:var(--text-muted);">${new Date(rec.approved_at).toLocaleDateString()}</span>` : ''}
@@ -546,6 +553,7 @@ async function loadAttendance() {
                 tr.querySelector('.approve-btn').addEventListener('click', () => approveRecord(rec.id));
                 tr.querySelector('.reject-btn').addEventListener('click', () => rejectRecord(rec.id));
             }
+            tr.querySelector('.status-select').addEventListener('change', (event) => changeRecordStatus(rec.id, event.target));
 
             tbody.appendChild(tr);
         });
@@ -553,6 +561,33 @@ async function loadAttendance() {
     } catch (error) {
         showToast(error.message, 'error');
     }
+}
+
+async function changeRecordStatus(id, select) {
+    const nextStatus = select.value;
+    select.disabled = true;
+    try {
+        const response = await fetch(`/api/v1/attendance/${id}/status`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify({ status: nextStatus })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to change attendance status');
+        }
+        showToast(`Attendance status changed to ${nextStatus}.`, 'success');
+        await refreshStatusViews();
+    } catch (error) {
+        showToast(error.message, 'error');
+        await loadAttendance();
+    } finally {
+        select.disabled = false;
+    }
+}
+
+async function refreshStatusViews() {
+    await Promise.all([loadAttendance(), loadDashboard(), loadLogs()]);
 }
 
 async function approveRecord(id) {
@@ -565,7 +600,7 @@ async function approveRecord(id) {
 
         if (!response.ok) throw new Error('Failed to approve record');
         showToast('Attendance approved.', 'success');
-        loadAttendance();
+        refreshStatusViews();
     } catch (error) {
         showToast(error.message, 'error');
     }
@@ -581,7 +616,7 @@ async function rejectRecord(id) {
 
         if (!response.ok) throw new Error('Failed to reject record');
         showToast('Attendance rejected.', 'success');
-        loadAttendance();
+        refreshStatusViews();
     } catch (error) {
         showToast(error.message, 'error');
     }

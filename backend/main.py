@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from backend.database import init_db, get_db_connection
 from backend.schemas import (
     EmployeeCreate, EmployeeUpdate, EmployeeOut,
-    AttendanceCreate, AttendanceUpdate, AttendanceOut,
+    AttendanceCreate, AttendanceUpdate, AttendanceStatusChange, AttendanceOut,
     OperationLogOut, BulkApproveRequest, ApproveRejectActionRequest,
     DashboardStats, HealthResponse, ResetResponse
 )
@@ -163,6 +163,15 @@ def create_attendance(record: AttendanceCreate, operator: str = Depends(get_oper
 def update_attendance(record_id: int, updates: AttendanceUpdate, operator: str = Depends(get_operator)):
     with get_db_connection() as conn:
         updated = crud.update_attendance(conn, record_id, updates.dict(exclude_unset=True), operator=operator)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Attendance record not found")
+        return updated
+
+@app.patch("/api/v1/attendance/{record_id}/status", response_model=AttendanceOut, tags=["Attendance Actions"])
+def change_attendance_status(record_id: int, change: AttendanceStatusChange):
+    """Development/demo transition endpoint also suitable for future MCP callers."""
+    with get_db_connection() as conn:
+        updated = crud.change_attendance_status(conn, record_id, change.status, operator="Debug User")
         if not updated:
             raise HTTPException(status_code=404, detail="Attendance record not found")
         return updated

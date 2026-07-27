@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Literal
 
 # Employee schemas
 class EmployeeBase(BaseModel):
@@ -39,6 +39,10 @@ class AttendanceUpdate(BaseModel):
     status: Optional[str] = None
     approver: Optional[str] = None
     approved_at: Optional[str] = None
+
+class AttendanceStatusChange(BaseModel):
+    """A status transition shared by the debug UI and external integrations."""
+    status: Literal["Pending", "Approved", "Rejected"]
 
 class AttendanceOut(AttendanceBase):
     id: int

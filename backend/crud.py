@@ -298,6 +298,45 @@ def update_attendance(conn: sqlite3.Connection, record_id: int, updates: dict, o
         conn.rollback()
         raise e
 
+def change_attendance_status(conn: sqlite3.Connection, record_id: int, status: str, operator: str = "Debug User") -> Optional[dict]:
+    """Apply a complete status transition for the debug UI and future MCP clients."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT a.status, e.name AS employee_name
+        FROM attendance a
+        JOIN employees e ON a.employee_id = e.id
+        WHERE a.id = ?
+        """,
+        (record_id,)
+    )
+    existing = cursor.fetchone()
+    if not existing:
+        return None
+
+    previous_status = existing["status"]
+    approver = None if status == "Pending" else "Debug User"
+    approved_at = None if status == "Pending" else datetime.datetime.now().isoformat()
+
+    try:
+        cursor.execute(
+            "UPDATE attendance SET status = ?, approver = ?, approved_at = ? WHERE id = ?",
+            (status, approver, approved_at, record_id)
+        )
+        write_audit_log(
+            cursor,
+            operation="Status Changed",
+            operator=operator,
+            target=existing["employee_name"],
+            result=f"{previous_status} → {status}",
+            details=f"Record ID: {record_id}"
+        )
+        conn.commit()
+        return get_attendance(conn, record_id)
+    except Exception:
+        conn.rollback()
+        raise
+
 def delete_attendance(conn: sqlite3.Connection, record_id: int, operator: str = "User") -> bool:
     cursor = conn.cursor()
     cursor.execute(

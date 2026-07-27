@@ -38,7 +38,7 @@ def run_tests():
     code, res = api_request("/health")
     assert code == 200, f"Health check failed with {code}"
     assert res["status"] == "ok", "Expected status ok"
-    print("✔ Health Check API passed")
+    print("[OK] Health Check API passed")
 
     # 2. Get initial dashboard stats
     code, res = api_request("/dashboard")
@@ -47,7 +47,7 @@ def run_tests():
     assert res["approved_today"] == 2, f"Expected 2 approved today, got {res['approved_today']}"
     assert "Charlie Brown" in res["pending_employee_names"], "Expected Charlie Brown in pending list"
     assert len(res["latest_logs"]) > 0, "Expected seed operation logs"
-    print("✔ Initial Dashboard Stats passed")
+    print("[OK] Initial Dashboard Stats passed")
 
     # 3. Create Employee
     emp_payload = {
@@ -60,14 +60,14 @@ def run_tests():
     code, res = api_request("/employees", method="POST", data=emp_payload, headers={"X-Operator": "SystemTest"})
     assert code == 201, f"Create employee failed with {code}"
     assert res["name"] == "Frank Miller", "Employee name mismatch"
-    print("✔ Create Employee API passed")
+    print("[OK] Create Employee API passed")
 
     # 4. Check if employee list updated
     code, res = api_request("/employees")
     assert code == 200
     ids = [e["id"] for e in res]
     assert "EMP005" in ids, "EMP005 not in list"
-    print("✔ Get Employees List passed")
+    print("[OK] Get Employees List passed")
 
     # 5. Create Attendance record
     att_payload = {
@@ -79,14 +79,14 @@ def run_tests():
     assert code == 201, f"Create attendance failed with {code}"
     assert res["status"] == "Pending", "Expected Pending status"
     record_id = res["id"]
-    print(f"✔ Create Attendance API passed (Record ID: {record_id})")
+    print(f"[OK] Create Attendance API passed (Record ID: {record_id})")
 
     # 6. Verify pending list has the new record
     code, res = api_request("/attendance/pending")
     assert code == 200
     pending_ids = [r["id"] for r in res]
     assert record_id in pending_ids, "New record not in pending list"
-    print("✔ Get Pending Attendance passed")
+    print("[OK] Get Pending Attendance passed")
 
     # 7. Approve the attendance record
     approve_payload = {"approver": "Test Manager"}
@@ -94,7 +94,7 @@ def run_tests():
     assert code == 200, f"Approve failed with {code}"
     assert res["status"] == "Approved", "Expected status to update to Approved"
     assert res["approver"] == "Test Manager", "Expected approver name to be set"
-    print("✔ Approve Attendance API passed")
+    print("[OK] Approve Attendance API passed")
 
     # 8. Check Dashboard stats updated
     code, res = api_request("/dashboard")
@@ -106,7 +106,7 @@ def run_tests():
     # Verify audit trail logs updated
     operators = [log["operator"] for log in res["latest_logs"]]
     assert "SystemTest" in operators, "Expected SystemTest in audit logs operators"
-    print("✔ Dashboard Stats Update after approval passed")
+    print("[OK] Dashboard Stats Update after approval passed")
 
     # 9. Verify bulk approve works with exclusion
     # Create another pending record
@@ -116,7 +116,6 @@ def run_tests():
         "start_time": "2026-07-27T10:30:00"
     }
     # EMP003 already has a seed record for today, but we can register attendance for yesterday to test bulk approval if needed.
-    # Wait, seed data has: Charlie Brown (EMP003) today T09:15:00 Pending, Diana Prince (EMP004) yesterday T09:00:00 Pending.
     # Let's verify dashboard stats before bulk approval:
     code, res = api_request("/dashboard")
     assert res["pending_approvals"] == 2, f"Pending count before bulk approval: {res['pending_approvals']}"
@@ -129,7 +128,7 @@ def run_tests():
     code, res = api_request("/attendance/bulk-approve", method="POST", data=bulk_payload, headers={"X-Operator": "SystemTest"})
     assert code == 200
     assert res["approved_ids"] == [4], f"Expected only record 4 (Diana Prince) to be approved, got {res['approved_ids']}"
-    print("✔ Bulk Approve with Exclusions API passed")
+    print("[OK] Bulk Approve with Exclusions API passed")
 
     # 10. Reset Demo Data
     code, res = api_request("/demo/reset", method="POST")
@@ -140,13 +139,13 @@ def run_tests():
     code, res = api_request("/dashboard")
     assert res["pending_approvals"] == 2, f"After reset expected 2 pending, got {res['pending_approvals']}"
     assert res["approved_today"] == 2, f"After reset expected 2 approved, got {res['approved_today']}"
-    print("✔ Demo Reset API passed")
+    print("[OK] Demo Reset API passed")
 
-    print("\n🎉 ALL REST API ENDPOINTS VERIFIED SUCCESSFULLY!")
+    print("\n[SUCCESS] ALL REST API ENDPOINTS VERIFIED SUCCESSFULLY!")
 
 if __name__ == "__main__":
     try:
         run_tests()
     except AssertionError as e:
-        print(f"\n❌ VERIFICATION FAILED: {str(e)}")
+        print(f"\n[FAILED] VERIFICATION FAILED: {str(e)}")
         sys.exit(1)
