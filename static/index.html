@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Attendance Management</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main CSS stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">AI</div>
+                <h1 class="logo-text">AI Attendance</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" id="btn-tab-dashboard" data-testid="tab-dashboard">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" id="btn-tab-employees" data-testid="tab-employees">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Employees</span>
+                </a>
+                <a href="#" class="nav-item" id="btn-tab-attendance" data-testid="tab-attendance">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Attendance</span>
+                </a>
+                <a href="#" class="nav-item" id="btn-tab-logs" data-testid="tab-logs">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span>Audit Logs</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="operator-badge">
+                    <span class="badge-label">Operator:</span>
+                    <select id="operator-select" class="operator-select">
+                        <option value="User">User</option>
+                        <option value="ChatGPT">ChatGPT</option>
+                        <option value="Claude">Claude</option>
+                    </select>
+                </div>
+                <button class="btn btn-reset" id="btn-demo-reset" data-testid="demo-reset-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    Reset Demo Data
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-title-area">
+                    <h2 id="current-section-title">Dashboard</h2>
+                    <p id="current-section-subtitle">Real-time stats and management logs overview.</p>
+                </div>
+                <div class="api-docs-link">
+                    <a href="/docs" target="_blank" class="docs-btn">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        API Docs
+                    </a>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- Notifications Toast Container -->
+                <div id="toast-container" class="toast-container"></div>
+
+                <!-- SECTION 1: DASHBOARD -->
+                <section id="section-dashboard" class="content-section active">
+                    <!-- Dashboard Cards Grid -->
+                    <div class="dashboard-grid">
+                        <div class="stat-card" data-testid="pending-approvals-card">
+                            <div class="stat-icon icon-pending">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Pending Approvals</span>
+                                <h3 class="stat-value" id="stats-pending-count">-</h3>
+                            </div>
+                        </div>
+
+                        <div class="stat-card" data-testid="approved-today-card">
+                            <div class="stat-icon icon-approved">
+                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Approved Today</span>
+                                <h3 class="stat-value" id="stats-approved-today-count">-</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-details-grid">
+                        <!-- Pending Approvals Detail -->
+                        <div class="card glass-card">
+                            <div class="card-header">
+                                <h3>Pending Employees</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul id="stats-pending-names" class="pending-names-list">
+                                    <li class="empty-state">No pending approvals.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Latest operation logs -->
+                        <div class="card glass-card">
+                            <div class="card-header">
+                                <h3>Recent AI Audit Trail (Latest 5)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="audit-logs-mini-list" id="stats-recent-logs">
+                                    <div class="empty-state">No recent logs.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: EMPLOYEES -->
+                <section id="section-employees" class="content-section">
+                    <div class="split-layout">
+                        <!-- Employee Creation Form -->
+                        <div class="card glass-card form-column">
+                            <div class="card-header">
+                                <h3 id="employee-form-title">Register Employee</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="employee-form" data-testid="employee-form">
+                                    <div class="form-group">
+                                        <label for="emp-id">Employee ID</label>
+                                        <input type="text" id="emp-id" placeholder="e.g. EMP005" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emp-name">Employee Name</label>
+                                        <input type="text" id="emp-name" placeholder="e.g. Emily Watson" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emp-dept">Department</label>
+                                        <input type="text" id="emp-dept" placeholder="e.g. Development" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emp-manager">Manager Name</label>
+                                        <input type="text" id="emp-manager" placeholder="e.g. Jane Smith" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emp-email">Email Address</label>
+                                        <input type="email" id="emp-email" placeholder="e.g. emily@example.com" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block" id="btn-employee-submit" data-testid="employee-submit-btn">
+                                        Register Employee
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-block hide" id="btn-employee-cancel">
+                                        Cancel Edit
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Employee List -->
+                        <div class="list-column">
+                            <div class="card glass-card full-height">
+                                <div class="card-header">
+                                    <h3>Employees List</h3>
+                                </div>
+                                <div class="card-body scrollable-body">
+                                    <div class="table-container">
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Name</th>
+                                                    <th>Department</th>
+                                                    <th>Manager</th>
+                                                    <th>Email</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="employees-table-body">
+                                                <!-- Dynamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: ATTENDANCE -->
+                <section id="section-attendance" class="content-section">
+                    <div class="split-layout">
+                        <!-- Register Attendance Form -->
+                        <div class="card glass-card form-column">
+                            <div class="card-header">
+                                <h3>Register Attendance</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="attendance-form" data-testid="attendance-form">
+                                    <div class="form-group">
+                                        <label for="att-employee-id">Select Employee</label>
+                                        <select id="att-employee-id" required>
+                                            <option value="">-- Choose Employee --</option>
+                                            <!-- Dynamic options -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="att-date">Work Date</label>
+                                        <input type="date" id="att-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="att-start-time">Start Time</label>
+                                        <input type="time" id="att-start-time" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="att-end-time">End Time (Optional)</label>
+                                        <input type="time" id="att-end-time">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block" id="btn-attendance-submit" data-testid="attendance-submit-btn">
+                                        Submit Registration
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Attendance list & Actions -->
+                        <div class="list-column">
+                            <div class="card glass-card full-height">
+                                <div class="card-header justify-header">
+                                    <h3>Attendance Records</h3>
+                                    <div class="header-actions">
+                                        <div class="filter-group">
+                                            <button class="btn btn-filter active" data-filter="all">All</button>
+                                            <button class="btn btn-filter" data-filter="Pending">Pending</button>
+                                            <button class="btn btn-filter" data-filter="Approved">Approved</button>
+                                            <button class="btn btn-filter" data-filter="Rejected">Rejected</button>
+                                        </div>
+                                        <button class="btn btn-success" id="btn-bulk-approve" data-testid="bulk-approve-btn">
+                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                            Bulk Approve
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body scrollable-body">
+                                    <!-- Exclude Bulk Modal/UI option inside page -->
+                                    <div id="bulk-exclude-container" class="bulk-exclude-bar hide">
+                                        <span>Bulk Approve Approver:</span>
+                                        <input type="text" id="bulk-approver-name" class="small-input" placeholder="Approver Name" value="System Manager">
+                                        <span class="separator">|</span>
+                                        <span>Exclude Names (comma separated):</span>
+                                        <input type="text" id="bulk-exclude-names" class="small-input" placeholder="e.g. Alice Smith">
+                                        <button class="btn btn-sm btn-primary" id="btn-confirm-bulk">Go</button>
+                                        <button class="btn btn-sm btn-secondary" id="btn-cancel-bulk">Cancel</button>
+                                    </div>
+
+                                    <div class="table-container">
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employee</th>
+                                                    <th>Date</th>
+                                                    <th>Clock In</th>
+                                                    <th>Clock Out</th>
+                                                    <th>Status</th>
+                                                    <th>Approver</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="attendance-table-body">
+                                                <!-- Dynamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 4: AUDIT LOGS -->
+                <section id="section-logs" class="content-section">
+                    <div class="card glass-card full-height">
+                        <div class="card-header justify-header">
+                            <h3>Audit Trail History</h3>
+                            <button class="btn btn-danger btn-sm" id="btn-clear-logs">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                Clear All Logs
+                            </button>
+                        </div>
+                        <div class="card-body scrollable-body">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Operator</th>
+                                            <th>Operation</th>
+                                            <th>Target</th>
+                                            <th>Result</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="logs-table-body">
+                                        <!-- Dynamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
