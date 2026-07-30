@@ -1,6 +1,6 @@
 import requests
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+BASE_URL = "http://attendance-api:8000/api/v1"
 
 
 def get_pending_attendance():
