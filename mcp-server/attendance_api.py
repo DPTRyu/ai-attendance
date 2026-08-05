@@ -1,6 +1,10 @@
+import os
 import requests
 
-BASE_URL = "http://attendance-api:8000/api/v1"
+BASE_URL = os.getenv(
+    "ATTENDANCE_API_URL",
+    "http://attendance-api:8000/api/v1"
+)
 
 
 def get_pending_attendance():
