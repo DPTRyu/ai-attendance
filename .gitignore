@@ -48,3 +48,29 @@ build/
 *.tfstate.*
 .terraform.lock.hcl
 crash.log
+
+# Vault(暗号化)のパスワードファイル
+.vault_pass
+vault_pass.txt
+*.vault_pass
+
+# リトライファイル(タスク失敗時に自動生成される)
+*.retry
+
+# ローカルの動的インベントリキャッシュ
+.ansible/
+*.cache
+
+# Python関連のゴミファイル
+__pycache__/
+*.pyc
+
+# ansible-galaxyでダウンロードしたrole(requirements.ymlで再取得できるので不要)
+roles/*
+!roles/.gitkeep
+
+
+# 秘密鍵(SSH接続用など)
+*.pem
+*.key
+id_rsa*

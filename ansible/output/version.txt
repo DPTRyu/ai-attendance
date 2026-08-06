@@ -1,0 +1,3 @@
+Application : AI Attendance
+Environment : Development
+Version : 1.0

@@ -1,0 +1,58 @@
+---
+- name: AI Attendance Setup
+  hosts: local
+  gather_facts: false
+
+  vars:
+    app_name: AI Attendance
+    app_env: Development
+    version: "1.0"
+
+  tasks:
+
+    - name: Show variables
+      debug:
+        msg:
+          - "Application : {{ app_name }}"
+          - "Environment : {{ app_env }}"
+          - "Version : {{ version }}"
+
+    - name: Show services
+      debug:
+        msg: "{{ item }}"
+      loop:
+        - attendance-api
+        - attendance-mcp
+        - terraform
+
+    - name: Production only
+      debug:
+        msg: "Deploy Production"
+      when: app_env == "Production"
+
+    - name: Check Terraform version
+      command: terraform version
+      register: terraform_result
+      ignore_errors: true
+
+    - name: Show Terraform result
+      debug:
+        var: terraform_result.stdout_lines
+
+    - name: Terraform installed
+      debug:
+        msg: "Terraform is installed!"
+      when: terraform_result.rc == 0
+
+    - name: Create output directory
+      file:
+        path: /work/ansible/output
+        state: directory
+
+    - name: Create version file
+      copy:
+        dest: /work/ansible/output/version.txt
+        content: |
+          Application : {{ app_name }}
+          Environment : {{ app_env }}
+          Version : {{ version }}
