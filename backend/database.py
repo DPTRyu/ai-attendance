@@ -2,7 +2,10 @@ import sqlite3
 import os
 import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "attendance.db")
+DB_PATH = os.getenv(
+    "ATTENDANCE_DB_PATH",
+    os.path.join(os.path.dirname(__file__), "..", "attendance.db"),
+)
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -11,7 +14,7 @@ def get_db_connection():
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
-def init_db():
+def init_db(seed=True):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -53,7 +56,11 @@ def init_db():
     """)
 
     conn.commit()
-    seed_data(conn)
+
+    # Seed only when requested
+    if seed:
+        seed_data(conn)
+
     conn.close()
 
 def seed_data(conn):

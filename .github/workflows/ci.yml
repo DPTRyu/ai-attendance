@@ -26,8 +26,35 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
 
-      - name: Run tests
+      - name: Start FastAPI
         run: |
-          pytest test_endpoints.py
+          nohup python -m uvicorn backend.main:app \
+            --host 127.0.0.1 \
+            --port 8000 > api.log 2>&1 &
+
+      - name: Wait for API
+        run: |
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          url = "http://127.0.0.1:8000/api/v1/health"
+
+          for _ in range(30):
+              try:
+                  with urllib.request.urlopen(url, timeout=2) as response:
+                      if response.status == 200:
+                          print("API is ready")
+                          break
+              except Exception:
+                  time.sleep(1)
+          else:
+              print("API did not become ready")
+              print(open("api.log").read())
+              raise SystemExit(1)
+          PY
+
+      - name: Run API verification
+        run: |
+          python test_endpoints.py

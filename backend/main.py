@@ -32,7 +32,8 @@ app.add_middleware(
 # Startup DB initialization
 @app.on_event("startup")
 def startup_event():
-    init_db()
+    seed = os.getenv("ATTENDANCE_SEED", "true").lower() == "true"
+    init_db(seed=seed)
 
 # Resolve paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
