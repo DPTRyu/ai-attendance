@@ -113,3 +113,59 @@ def test_approve_attendance(client):
     assert data["id"] == record_id
     assert data["status"] == "Approved"
     assert data["approver"] == "Test Manager"
+
+def test_bulk_approve(client):
+    employees = [
+        {
+            "id": "TEST005",
+            "name": "Bulk Test One",
+            "department": "Testing",
+            "manager_name": "Test Manager",
+            "email": "bulk1@example.com",
+        },
+        {
+            "id": "TEST006",
+            "name": "Bulk Test Two",
+            "department": "Testing",
+            "manager_name": "Test Manager",
+            "email": "bulk2@example.com",
+        },
+    ]
+
+    for employee in employees:
+        response = client.post(
+            "/api/v1/employees",
+            json=employee,
+            headers={"X-Operator": "pytest"},
+        )
+
+        assert response.status_code == 201
+
+        attendance = {
+            "employee_id": employee["id"],
+            "work_date": "2026-08-17",
+            "start_time": "2026-08-17T09:00:00",
+        }
+
+        response = client.post(
+            "/api/v1/attendance",
+            json=attendance,
+            headers={"X-Operator": "pytest"},
+        )
+
+        assert response.status_code == 201
+
+    response = client.post(
+        "/api/v1/attendance/bulk-approve",
+        json={
+            "approver": "Bulk Manager",
+            "exclude_employee_names": ["Bulk Test Two"],
+        },
+        headers={"X-Operator": "pytest"},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data["approved_ids"]) == 1
