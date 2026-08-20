@@ -4,7 +4,7 @@ resource "google_cloud_run_v2_service" "attendance_api" {
 
   template {
     containers {
-      image = "asia-northeast1-docker.pkg.dev/${var.project_id}/ai-attendance/attendance-api:latest"
+      image = "asia-northeast1-docker.pkg.dev/${var.project_id}/ai-attendance/attendance-api:${var.api_image_tag}"
 
       ports {
         container_port = 8080
